@@ -2,6 +2,7 @@ import ansys.fluent.core as pyfluent
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
 import logging
+import argparse
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -135,20 +136,14 @@ class ContourPlotManager:
         }
         contour["contour_emissivity"].display()
 
-def main():
-
-    # Variables
-    USER_CASE_FILE = r"C:\\Users\\fakin\\AppData\\Local\\Ansys\\ansys_fluent_core\\examples\\exhaust_system.cas.h5"
-    USER_PROCESSOR_COUNT = 1
-    USER_SHOW_GUI = True
-
+def visualize_e(case_file: str, cores: int = 1, gui_mode: bool = False) -> None:
     solver = pyfluent.launch_fluent(
         precision="double",
-        processor_count=USER_PROCESSOR_COUNT,  # TODO this should be parameter in the final script
+        processor_count=cores,  # TODO this should be parameter in the final script
         mode="solver",
-        show_gui=USER_SHOW_GUI
+        show_gui=gui_mode
     )
-    solver.file.read_case(file_name=USER_CASE_FILE)
+    solver.file.read_case(file_name=case_file)
     
     solver_manager = SolverManager(solver)
     solver_manager.check_BCs()
@@ -163,6 +158,24 @@ def main():
     contour_plot_manager = ContourPlotManager(solver)
     contour_plot_manager.create_contour_plot(e_manager.e_dict)
     input("Press Enter to continue...")
+
+def main():
+    parser = argparse.ArgumentParser(description="Create emissivity contour plot in Ansys Fluent")
+    
+    parser.add_argument('filename', type=str, help="Case file")
+    parser.add_argument('-n', '--number_of_cores', type=int, default=1, help="Number of cores (default 1)")
+    parser.add_argument('-g', '--show_gui', action='store_true', help="Show Fluent GUI")
+    
+    args = parser.parse_args()
+    filename = args.filename
+    number_of_cores = args.number_of_cores
+    show_gui = args.show_gui
+    
+    print(f"File name: {filename}")
+    print(f"Number of cores: {number_of_cores}")
+    print(f"Show GUI: {show_gui}")
+
+    visualize_e(filename, number_of_cores, show_gui)
 
 if __name__ == "__main__":
     main()
