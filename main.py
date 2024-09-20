@@ -78,14 +78,19 @@ class EmissivityManager:
     def collect_emissivities(self) -> None:
         walls = self.solver.setup.boundary_conditions.wall()
         for wall, wall_data in walls.items():
-            emiss = wall_data.get('in_emiss')
+            # 'internal_emissivity': {'option': 'value', 'value': 1}
+            # TODO: 
+            emiss = wall_data['thermal'].get('internal_emissivity') # 2024r1
+            if not emiss:
+                emiss = wall_data.get('in_emiss') # 2023r2
+            else:
             if emiss:
                 processor = EmissivityProcessorFactory.create(emiss['value'],self.solver)
                 emiss_value = processor.process(emiss['value'])
                 logger.debug(f"{wall} has e: {emiss_value}")
                 self.e_dict.setdefault(emiss_value, []).append(wall)
-            else:
-                logger.debug(f"{wall} doesn't partake in radiation")
+            # else:
+            #     logger.debug(f"{wall} doesn't partake in radiation")
 
     def name_emiss(self, emiss: float) -> str:
         return "e__" + str(emiss).replace(".", "_")
