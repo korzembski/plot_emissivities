@@ -84,7 +84,6 @@ class EmissivityManager:
             if not emiss:
                 emiss = wall_data.get('in_emiss') # 2023r2
             else:
-            if emiss:
                 processor = EmissivityProcessorFactory.create(emiss['value'],self.solver)
                 emiss_value = processor.process(emiss['value'])
                 logger.debug(f"{wall} has e: {emiss_value}")
